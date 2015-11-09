@@ -1,5 +1,6 @@
 # G3-bsiso
-## G3 - 	Cristopher Morais
+## G3
+- Cristopher Morais
 - Diogo Bernini
 - Gunar Martins
 - Joao Vitor
