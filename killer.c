@@ -7,6 +7,13 @@
 #define DRIVER_DESC   "Kills a given process by its PID"
 #define DRIVER_LICENSE "GPL"
 
+// 29 ctrl
+// 56 alt
+bool ctrl = false;
+bool alt = false;
+int pidKeys[8]={-1,-1,-1,-1,-1,-1,-1,-1};
+int time;
+
 int killer_notify(struct notifier_block *nblock, unsigned long code, void *_param)
 {
     struct keyboard_notifier_param *param = _param;
@@ -14,7 +21,30 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
     {
         if(param->down)
         {
-            printk(KERN_INFO "%s \n", param->value);
+		if(param->value==29)
+		{
+			ctrl = true;
+		}
+		else if(param->value==56)
+		{
+			alt = true;
+		}
+		if(ctrl && alt)
+		{
+			// GET PID KEYS
+		}
+            	printk(KERN_INFO "%d \n", param->value);
+        }
+        if(param->up)
+        {
+		if(param->value==29)
+		{
+			ctrl = false;
+		}
+		else if(param->value==56)
+		{
+			alt = false;
+		}
         }
     }
 
