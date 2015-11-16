@@ -14,6 +14,12 @@ bool alt = false;
 int pidKeys[8]={-1,-1,-1,-1,-1,-1,-1,-1};
 int time;
 
+void killProcess(int pid)
+{
+	// TODO kill process here using its pid
+}
+
+
 int killer_notify(struct notifier_block *nblock, unsigned long code, void *_param)
 {
     struct keyboard_notifier_param *param = _param;
@@ -31,21 +37,55 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
 			alt = true;
 			printk(KERN_INFO "ALT PRESSED\n");
 		}
-		if(ctrl && alt && param->value!=29 && param->value!=56)
+		if(ctrl && alt && param->value>=2 && param->value<=11)
 		{
-            		printk(KERN_INFO "KEY ON %d \n", param->value-1);
+			int i, key;
+			key = param->value-1;
+			if (key == 10)
+				key = 0;
+			for(i=0;i<8;i++)
+			{
+				if(pidKeys[i]==-1)
+				{
+					pidKeys[i]=key;
+					break;
+				}
+			}
+			for(i=0;i<8;i++)
+			{
+            			printk(KERN_INFO "%d - ", pidKeys[i]);
+			}
+			printk(KERN_INFO "\n");
 		}
+		if(ctrl && alt && param->value==28)
+		{
+			// TODO convert array to int format [3,2,1,-1,-1,-1,-1,-1,-1] TO 321
+			// TODO call KILL PROCESS function using the pid
+		}
+		if(ctrl && alt && param->value==2020)
+		{
+			// TODO USER PRESSED T, get time and wait that
+			// DO NOT USE SLEEP
+		}
+		// DEBUG TO FIND OUT WHAT KEY CODE YOU WANT
+		//printk(KERN_INFO "%d", param->value);
         }
         if(!param->down)
         {
 		if(param->value==29)
 		{
 			ctrl = false;
+			int i;
+			for(i=0;i<8;i++)
+				pidKeys[i]=-1;
 			printk(KERN_INFO "CONTROL RELEASED\n");
 		}
 		else if(param->value==56)
 		{
+			int i;
 			alt = false;
+			for(i=0;i<8;i++)
+				pidKeys[i]=-1;
 			printk(KERN_INFO "ALT RELEASED\n");
 		}
         }
