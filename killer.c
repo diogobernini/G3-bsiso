@@ -24,26 +24,29 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
 		if(param->value==29)
 		{
 			ctrl = true;
+			printk(KERN_INFO "CONTROL PRESSED\n");
 		}
 		else if(param->value==56)
 		{
 			alt = true;
+			printk(KERN_INFO "ALT PRESSED\n");
 		}
-		if(ctrl && alt)
+		if(ctrl && alt && param->value!=29 && param->value!=56)
 		{
-			// GET PID KEYS
+            		printk(KERN_INFO "KEY ON %d \n", param->value-1);
 		}
-            	printk(KERN_INFO "%d \n", param->value);
         }
-        if(param->up)
+        if(!param->down)
         {
 		if(param->value==29)
 		{
 			ctrl = false;
+			printk(KERN_INFO "CONTROL RELEASED\n");
 		}
 		else if(param->value==56)
 		{
 			alt = false;
+			printk(KERN_INFO "ALT RELEASED\n");
 		}
         }
     }
