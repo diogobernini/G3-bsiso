@@ -2,6 +2,14 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/keyboard.h>
+#include <linux/signal.h>
+
+#include <linux/sched.h>
+
+#include <asm/siginfo.h>	//siginfo
+#include <linux/debugfs.h>
+#include <linux/uaccess.h>
+#include <linux/pid.h>
 
 #define DRIVER_AUTHOR "grupo 3"
 #define DRIVER_DESC   "Kills a given process by its PID"
@@ -16,7 +24,8 @@ int time;
 
 void killProcess(int pid)
 {
-	// TODO kill process here using its pid
+	int ret = kill_pid(find_vpid(pid), SIGKILL, 1);
+	printk(KERN_INFO "KILL PROCESS %d - RETURN %d\n", pid, ret);
 }
 
 
@@ -59,8 +68,13 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
 		}
 		if(ctrl && alt && param->value==28)
 		{
-			// TODO convert array to int format [3,2,1,-1,-1,-1,-1,-1,-1] TO 321
-			// TODO call KILL PROCESS function using the pid
+			int i, j, k = 0;
+			for (j = 0; j<8; j++)
+				if(pidKeys[j]==-1)
+					break;
+			for (i = 0; i < j; i++)
+			    k = 10 * k + pidKeys[i];
+			killProcess(k);
 		}
 		if(ctrl && alt && param->value==2020)
 		{
@@ -74,15 +88,15 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
         {
 		if(param->value==29)
 		{
+			int i = 0;
 			ctrl = false;
-			int i;
 			for(i=0;i<8;i++)
 				pidKeys[i]=-1;
 			printk(KERN_INFO "CONTROL RELEASED\n");
 		}
 		else if(param->value==56)
 		{
-			int i;
+			int i = 0;
 			alt = false;
 			for(i=0;i<8;i++)
 				pidKeys[i]=-1;
