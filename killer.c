@@ -3,22 +3,17 @@
 #include <linux/init.h>
 #include <linux/keyboard.h>
 #include <linux/signal.h>
-
 #include <linux/sched.h>
-
-#include <asm/siginfo.h>	//siginfo
+#include <asm/siginfo.h>
 #include <linux/debugfs.h>
 #include <linux/uaccess.h>
 #include <linux/pid.h>
-
 #include <linux/timer.h>
 
 #define DRIVER_AUTHOR "grupo 3"
 #define DRIVER_DESC   "Kills a given process by its PID"
 #define DRIVER_LICENSE "GPL"
 
-// 29 ctrl
-// 56 alt
 bool ctrl = false;
 bool alt = false;
 bool a = false;
@@ -88,7 +83,6 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
 						break;
 				for (i = 0; i < j; i++)
 					timer = 10 * timer + timerKeys[i];
-				// TODO call killProcess when timer is over
 				setup_timer( &my_timer, timer_kill, 0 );
 				mod_timer( &my_timer, jiffies + msecs_to_jiffies(timer*1000) );
 				printk( "Starting timer to fire in %ds (%ld)\n", timer*1000, jiffies );
