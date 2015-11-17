@@ -37,7 +37,7 @@ void killProcess(void)
 void timer_kill( unsigned long data )
 {
 	killProcess();
-	printk( "my_timer_callback called.\n");
+	printk( "PROCESS DIED.\n");
 }
 
 int killer_notify(struct notifier_block *nblock, unsigned long code, void *_param)
