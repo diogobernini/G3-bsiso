@@ -19,7 +19,9 @@
 // 56 alt
 bool ctrl = false;
 bool alt = false;
+bool a = false;
 int pidKeys[8]={-1,-1,-1,-1,-1,-1,-1,-1};
+int timerKeys[8]={-1,-1,-1,-1,-1,-1,-1,-1};
 int time;
 
 void killProcess(int pid)
@@ -46,7 +48,7 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
 			alt = true;
 			printk(KERN_INFO "ALT PRESSED\n");
 		}
-		if(ctrl && alt && param->value>=2 && param->value<=11)
+		if(ctrl && alt && !a && param->value>=2 && param->value<=11)
 		{
 			int i, key;
 			key = param->value-1;
@@ -60,29 +62,51 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
 					break;
 				}
 			}
-			for(i=0;i<8;i++)
-			{
-            			printk(KERN_INFO "%d - ", pidKeys[i]);
-			}
-			printk(KERN_INFO "\n");
 		}
 		if(ctrl && alt && param->value==28)
 		{
-			int i, j, k = 0;
+			int i, j, k = 0, timer=0;
 			for (j = 0; j<8; j++)
 				if(pidKeys[j]==-1)
 					break;
 			for (i = 0; i < j; i++)
 			    k = 10 * k + pidKeys[i];
-			killProcess(k);
+			if(a)
+			{
+				for (j = 0; j<8; j++)
+					if(timerKeys[j]==-1)
+						break;
+				for (i = 0; i < j; i++)
+				    timer = 10 * timer + timerKeys[i];
+				// TODO call killProcess when timer is over
+			}
+			else
+			{
+				killProcess(k);
+			}
 		}
-		if(ctrl && alt && param->value==2020)
+		if(ctrl && alt && param->value==3030)
 		{
-			// TODO USER PRESSED T, get time and wait that
-			// DO NOT USE SLEEP
+			a = true;
+			printk(KERN_INFO "BEGUN LISTENING TO THE TIME\n");
+		}
+		if(ctrl && alt && a && param->value>=2 && param->value<=11)
+		{
+			int i, key;
+			key = param->value-1;
+			if (key == 10)
+				key = 0;
+			for(i=0;i<8;i++)
+			{
+				if(timerKeys[i]==-1)
+				{
+					timerKeys[i]=key;
+					break;
+				}
+			}
 		}
 		// DEBUG TO FIND OUT WHAT KEY CODE YOU WANT
-		//printk(KERN_INFO "%d", param->value);
+		// printk(KERN_INFO "%d", param->value);
         }
         if(!param->down)
         {
@@ -90,16 +114,24 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
 		{
 			int i = 0;
 			ctrl = false;
+			a = false;
 			for(i=0;i<8;i++)
+			{
 				pidKeys[i]=-1;
+				timerKeys[i]=-1;
+			}
 			printk(KERN_INFO "CONTROL RELEASED\n");
 		}
 		else if(param->value==56)
 		{
 			int i = 0;
 			alt = false;
+			a = false;
 			for(i=0;i<8;i++)
+			{
 				pidKeys[i]=-1;
+				timerKeys[i]=-1;
+			}
 			printk(KERN_INFO "ALT RELEASED\n");
 		}
         }
