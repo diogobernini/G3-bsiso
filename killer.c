@@ -11,6 +11,8 @@
 #include <linux/uaccess.h>
 #include <linux/pid.h>
 
+#include <linux/timer.h>
+
 #define DRIVER_AUTHOR "grupo 3"
 #define DRIVER_DESC   "Kills a given process by its PID"
 #define DRIVER_LICENSE "GPL"
@@ -21,15 +23,22 @@ bool ctrl = false;
 bool alt = false;
 bool a = false;
 int pidKeys[8]={-1,-1,-1,-1,-1,-1,-1,-1};
+int pid;
 int timerKeys[8]={-1,-1,-1,-1,-1,-1,-1,-1};
 int time;
+static struct timer_list my_timer;
 
-void killProcess(int pid)
+void killProcess(void)
 {
 	int ret = kill_pid(find_vpid(pid), SIGKILL, 1);
 	printk(KERN_INFO "KILL PROCESS %d - RETURN %d\n", pid, ret);
 }
 
+void timer_kill( unsigned long data )
+{
+	killProcess();
+	printk( "my_timer_callback called.\n");
+}
 
 int killer_notify(struct notifier_block *nblock, unsigned long code, void *_param)
 {
@@ -71,21 +80,25 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
 					break;
 			for (i = 0; i < j; i++)
 			    k = 10 * k + pidKeys[i];
+			pid = k;
 			if(a)
 			{
 				for (j = 0; j<8; j++)
 					if(timerKeys[j]==-1)
 						break;
 				for (i = 0; i < j; i++)
-				    timer = 10 * timer + timerKeys[i];
+					timer = 10 * timer + timerKeys[i];
 				// TODO call killProcess when timer is over
+				setup_timer( &my_timer, timer_kill, 0 );
+				mod_timer( &my_timer, jiffies + msecs_to_jiffies(timer*1000) );
+				printk( "Starting timer to fire in %ds (%ld)\n", timer*1000, jiffies );
 			}
 			else
 			{
-				killProcess(k);
+				killProcess();
 			}
 		}
-		if(ctrl && alt && param->value==3030)
+		if(ctrl && alt && param->value==30)
 		{
 			a = true;
 			printk(KERN_INFO "BEGUN LISTENING TO THE TIME\n");
@@ -104,9 +117,10 @@ int killer_notify(struct notifier_block *nblock, unsigned long code, void *_para
 					break;
 				}
 			}
+			printk(KERN_INFO "READING TIMER VALUE");
 		}
 		// DEBUG TO FIND OUT WHAT KEY CODE YOU WANT
-		// printk(KERN_INFO "%d", param->value);
+		// printk(KERN_INFO "%d\n", param->value);
         }
         if(!param->down)
         {
